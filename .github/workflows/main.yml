@@ -22,32 +22,33 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install poppler-utils
+      - name: Install pdfinfo
         run: |
           sudo apt-get update
           sudo apt-get install -y poppler-utils
 
-      - name: Extract PDF Metadata
+      - name: Extract PDF Metadata and Sort by Date
         run: |
           echo "Generating index.html"
           PDF_LIST=""
           for pdf in *.pdf; do
             BASENAME=$(basename "$pdf")
-            # Extract the name and date using a tool like 'pdfinfo'
-            PDF_METADATA=$(pdfmetadata "$pdf")
-            PDF_NAME=$(echo "$PDF_METADATA" | grep -i "title" | awk -F': ' '{print $2}' | sed 's/^\s*//g' | tr -d '\n')
-            PDF_DATE=$(echo "$PDF_METADATA" | grep -i "creationdate" | awk -F': ' '{print $2}' | sed 's/^\s*//g' | tr -d '\n')
+            PDF_METADATA=$(pdfinfo "$pdf")
+            PDF_NAME=$(echo "$PDF_METADATA" | grep -i "Title:" | awk -F': ' '{print $2}' | sed 's/^\s*//g' | tr -d '\n')
+            PDF_DATE=$(echo "$PDF_METADATA" | grep -i "CreationDate:" | awk -F': ' '{print $2}' | sed 's/^\s*//g' | tr -d '\n')
             if [ -z "$PDF_NAME" ]; then
               PDF_NAME=$BASENAME
             fi
             if [ -z "$PDF_DATE" ]; then
               PDF_DATE="Unknown Date"
             fi
-            PDF_LIST="$PDF_LIST<li><a href='./$pdf'>$PDF_NAME - $PDF_DATE</a></li>"
+            PDF_LIST="$PDF_LIST<$pdf|$PDF_DATE>,"
           done
 
           if [ -z "$PDF_LIST" ]; then
             PDF_LIST="<li>No PDFs available</li>"
+          else
+            PDF_LIST=$(echo "$PDF_LIST" | tr ',' '\n' | sort -k2 | tr '\n' '<br>')
           fi
 
           cat <<EOF > index.html
@@ -84,4 +85,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
