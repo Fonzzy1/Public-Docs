@@ -7,8 +7,6 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -24,14 +22,28 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Generate PDF List
+      - name: Extract PDF Metadata
         run: |
           echo "Generating index.html"
           PDF_LIST=""
           for pdf in *.pdf; do
             BASENAME=$(basename "$pdf")
-            PDF_LIST="$PDF_LIST<li><a href='./$pdf'>$BASENAME</a></li>"
+            # Extract the name and date using a tool like 'pdfinfo'
+            PDF_INFO=$(pdfinfo "$pdf")
+            PDF_NAME=$(echo "$PDF_INFO" | grep "Title" | awk -F': ' '{print $2}')
+            PDF_DATE=$(echo "$PDF_INFO" | grep "CreationDate" | awk -F': ' '{print $2}')
+            if [ -z "$PDF_NAME" ]; then
+              PDF_NAME=$BASENAME
+            fi
+            if [ -z "$PDF_DATE" ]; then
+              PDF_DATE="Unknown Date"
+            fi
+            PDF_LIST="$PDF_LIST<li><a href='./$pdf'>$PDF_NAME - $PDF_DATE</a></li>"
           done
+
+          if [ -z "$PDF_LIST" ]; then
+            PDF_LIST="<li>No PDFs available</li>"
+          fi
 
           cat <<EOF > index.html
           <!DOCTYPE html>
@@ -63,8 +75,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          path: 'index.html'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
