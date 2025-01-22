@@ -42,13 +42,11 @@ jobs:
             if [ -z "$PDF_DATE" ]; then
               PDF_DATE="Unknown Date"
             fi
-            PDF_LIST="$PDF_LIST<$pdf|$PDF_DATE>,"
+            PDF_LIST="$PDF_LIST<li><a href='./$pdf'>$PDF_NAME ($PDF_DATE)</a></li>"
           done
 
           if [ -z "$PDF_LIST" ]; then
             PDF_LIST="<li>No PDFs available</li>"
-          else
-            PDF_LIST=$(echo "$PDF_LIST" | tr ',' '\n' | sort -k2 | tr '\n' '<br>')
           fi
 
           cat <<EOF > index.html
@@ -81,7 +79,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'index.html'
+          path: '.'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
