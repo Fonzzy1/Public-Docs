@@ -29,9 +29,9 @@ jobs:
           for pdf in *.pdf; do
             BASENAME=$(basename "$pdf")
             # Extract the name and date using a tool like 'pdfinfo'
-            PDF_INFO=$(pdfinfo "$pdf")
-            PDF_NAME=$(echo "$PDF_INFO" | grep "Title" | awk -F': ' '{print $2}')
-            PDF_DATE=$(echo "$PDF_INFO" | grep "CreationDate" | awk -F': ' '{print $2}')
+            PDF_METADATA=$(pdfmetadata "$pdf")
+            PDF_NAME=$(echo "$PDF_METADATA" | grep -i "title" | awk -F': ' '{print $2}' | sed 's/^\s*//g' | tr -d '\n')
+            PDF_DATE=$(echo "$PDF_METADATA" | grep -i "creationdate" | awk -F': ' '{print $2}' | sed 's/^\s*//g' | tr -d '\n')
             if [ -z "$PDF_NAME" ]; then
               PDF_NAME=$BASENAME
             fi
