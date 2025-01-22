@@ -30,7 +30,7 @@ jobs:
           PDF_LIST=""
           for pdf in Files/*.pdf; do
             BASENAME=$(basename "$pdf")
-            PDF_LIST="$PDF_LIST<li><a href='./$pdf'>$BASENAME</a></li>\n"
+            PDF_LIST="$PDF_LIST<li><a href='./$pdf'>$BASENAME</a></li>"
           done
 
           cat <<EOF > index.html
