@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - 'Files/**'   # Trigger on changes in the /Files directory
-      - '.github/workflows/update-index.yml'
+      - '.github/workflows/main.yml'
 
 jobs:
   build:
