@@ -58,18 +58,6 @@ jobs:
           </html>
           EOF
 
-      - name: Commit and Push Changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet; then
-            git add index.html
-            git commit -m "Update index.html with latest PDF list"
-            git push
-          else
-            echo "No changes to commit"
-          fi
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
